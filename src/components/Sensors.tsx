@@ -7,10 +7,10 @@ interface SensorsProps {
 
 const Sensors: React.FC<SensorsProps> = ({ emfLevel, temperature }) => {
   return (
-    <div className="flex flex-col gap-4 z-30">
+    <div className="flex flex-col gap-8 z-30 items-center">
       {/* Sensor EMF */}
-      <div className="bg-black/30 p-3 rounded-lg">
-        <div className="text-green-400 text-xs mb-2 text-center font-mono">EMF</div>
+      <div className="flex flex-col items-center">
+        <div className="text-green-400 text-xs mb-2 text-center font-mono w-16">EMF</div>
         <div className="w-8 h-48 bg-black/50 rounded-full border-2 border-green-800 relative">
           {/* Niveles del EMF */}
           {[1, 2, 3, 4, 5].map((level) => (
@@ -33,8 +33,8 @@ const Sensors: React.FC<SensorsProps> = ({ emfLevel, temperature }) => {
       </div>
 
       {/* Termómetro */}
-      <div className="bg-black/30 p-3 rounded-lg">
-        <div className="text-green-400 text-xs mb-2 text-center font-mono">Temperatura</div>
+      <div className="flex flex-col items-center mt-8">
+        <div className="text-green-400 text-xs mb-2 text-center font-mono w-16">Temperatura</div>
         <div className="w-8 h-48 bg-black/50 rounded-full border-2 border-red-800 relative">
           {/* Marcas de temperatura */}
           {[0, 10, 20, 30, 40].map((temp) => (

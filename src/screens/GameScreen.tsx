@@ -15,6 +15,11 @@ import Sensors from "../components/Sensors";
 import html2canvas from 'html2canvas';
 import DialogSystem from '../components/DialogSystem';
 import { introScene } from '../scenes/introScene';
+import { LEVELS } from '../data/levelConfigs';
+import { level2Scene } from '../scenes/level2Scene';
+import { level2IntroScene } from '../scenes/level2IntroScene';
+import { level2InitialScene } from '../scenes/level2InitialScene';
+import BlocDeNotas from '../components/BlocDeNotas';
 
 interface EventState {
   type: 'orb' | 'fog';
@@ -29,7 +34,7 @@ interface CameraState {
   timestamp: number;
 }
 
-const GameScreen = ({ selectedHouseId }: { selectedHouseId: string }) => {
+const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
   const [currentCamera, setCurrentCamera] = useState(0);
   const [orbEvents, setOrbEvents] = useState<ReactElement[]>([]);
   const [fogEvents, setFogEvents] = useState<ReactElement[]>([]);
@@ -46,25 +51,32 @@ const GameScreen = ({ selectedHouseId }: { selectedHouseId: string }) => {
   const [emfLevel, setEmfLevel] = useState(0);
   const [temperature, setTemperature] = useState(20);
   const [cameraFrozen, setCameraFrozen] = useState(false);
+  const [showInitial, setShowInitial] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [currentDialogScene, setCurrentDialogScene] = useState(introScene);
+  const [currentDialogScene, setCurrentDialogScene] = useState(level2InitialScene);
   const orbAppearedRef = useRef(false);
   const cameraRef = useRef<HTMLDivElement>(null);
   const [frozenImage, setFrozenImage] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
+  const [gameLoaded, setGameLoaded] = useState(false);
 
-  const house = HOUSES.find((h) => h.id === selectedHouseId);
-  if (!house) return <div>Error: casa no encontrada</div>;
+  // Buscar la configuración del nivel actual
+  const levelConfig = LEVELS.find(l => l.id === selectedLevelId) ?? LEVELS[0];
 
-  const cameraImage = house.cameras[currentCamera];
+  if (!levelConfig) return <div>Error: nivel no encontrado</div>;
+
+  const cameraImage = levelConfig.rooms[currentCamera].image;
+  const cameraName = levelConfig.rooms[currentCamera].name;
   const remainingPhotos = 3 - photos.length;
 
   useEffect(() => {
+    if (!gameLoaded || paused) return;
     const interval = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [gameLoaded, paused]);
 
   // Efecto para la batería de la linterna
   useEffect(() => {
@@ -239,7 +251,25 @@ const GameScreen = ({ selectedHouseId }: { selectedHouseId: string }) => {
     }
   };
 
-  // Desactivar congelación y reanudar juego al cerrar el diálogo
+  // Al terminar la escena inicial, mostrar fundido y luego la intro
+  const handleInitialComplete = () => {
+    setShowInitial(false);
+    setTimeout(() => {
+      setGameLoaded(true); // Solo aquí se carga el juego
+      setShowIntro(true);
+      setCurrentDialogScene(level2IntroScene);
+    }, 700);
+  };
+
+  // Al terminar la intro, empieza el juego y a los 5s muestra overlay
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+    setTimeout(() => {
+      setCurrentDialogScene(level2Scene);
+      setShowDialog(true);
+    }, 5000);
+  };
+
   const handleDialogComplete = () => {
     setShowDialog(false);
     setCameraFrozen(false);
@@ -274,50 +304,75 @@ const GameScreen = ({ selectedHouseId }: { selectedHouseId: string }) => {
         />
       </div>
       <div className="text-green-400 font-mono mb-2">Tiempo: {formatTime(elapsedSeconds)}</div>
-      <div className="flex items-start justify-center w-full gap-0">
-        {/* Sensores pegados a la cámara */}
-        <div className="flex flex-col items-end justify-center h-full mr-4 z-40">
-          <Sensors emfLevel={emfLevel} temperature={temperature} />
-        </div>
-        {/* Centro: Cámara y controles */}
-        <div className="flex flex-col items-center">
-          <div className="relative mb-2" ref={cameraRef} id="camera-capture-area">
-            {cameraFrozen && frozenImage ? (
-              <img src={frozenImage} alt="Cámara congelada" className="w-[800px] h-[500px] object-cover rounded-lg border-4 border-green-800" />
-            ) : (
-              <CameraView 
-                image={cameraImage}
-                showGlitch={hasGlitch}
+      {/* Escena inicial */}
+      <DialogSystem
+        scene={level2InitialScene}
+        isVisible={showInitial}
+        onComplete={handleInitialComplete}
+      />
+      {/* Escena intro */}
+      <DialogSystem
+        scene={level2IntroScene}
+        isVisible={!showInitial && showIntro}
+        onComplete={handleIntroComplete}
+      />
+      {/* Escena overlay */}
+      <DialogSystem
+        scene={currentDialogScene}
+        isVisible={!showInitial && !showIntro && showDialog}
+        onComplete={handleDialogComplete}
+      />
+      {/* Gameplay solo si no hay diálogo activo y el juego está cargado */}
+      {gameLoaded && !showInitial && !showIntro && !showDialog && (
+        <div className="flex items-start justify-center w-full gap-0">
+          {/* Sensores pegados a la cámara */}
+          <div className="flex flex-col items-end justify-center h-full mr-4 z-40">
+            <Sensors emfLevel={emfLevel} temperature={temperature} />
+          </div>
+          {/* Centro: Cámara y controles */}
+          <div className="flex flex-col items-center">
+            <div className="relative mb-2" ref={cameraRef} id="camera-capture-area">
+              {cameraFrozen && frozenImage ? (
+                <img src={frozenImage} alt="Cámara congelada" className="w-[800px] h-[500px] object-cover rounded-lg border-4 border-green-800" />
+              ) : (
+                <CameraView 
+                  image={cameraImage}
+                  showGlitch={hasGlitch}
+                >
+                  {flashlightOn && batteryLevel > 0 && (
+                    <FlashlightOverlay batteryDuration={60} />
+                  )}
+                  {isFlashing && <CameraFlash isVisible={true} />}
+                  {orbEvents}
+                  {fogEvents}
+                </CameraView>
+              )}
+            </div>
+            {/* Botones de cambiar cámara */}
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <button
+                onClick={() => setCurrentCamera((c) => (c - 1 + levelConfig.rooms.length) % levelConfig.rooms.length)}
+                className="bg-green-900/60 hover:bg-green-700/80 text-white px-2 py-1 rounded text-sm"
+                disabled={cameraFrozen || paused}
               >
-                {flashlightOn && batteryLevel > 0 && (
-                  <FlashlightOverlay batteryDuration={60} />
-                )}
-                {isFlashing && <CameraFlash isVisible={true} />}
-                {orbEvents}
-                {fogEvents}
-              </CameraView>
-            )}
+                ◀
+              </button>
+              <span className="text-green-300 font-mono text-sm">{cameraName}</span>
+              <button
+                onClick={() => setCurrentCamera((c) => (c + 1) % levelConfig.rooms.length)}
+                className="bg-green-900/60 hover:bg-green-700/80 text-white px-2 py-1 rounded text-sm"
+                disabled={cameraFrozen || paused}
+              >
+                ▶
+              </button>
+            </div>
           </div>
-          {/* Botones de cambiar cámara */}
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <button
-              onClick={() => setCurrentCamera((c) => (c - 1 + house.cameras.length) % house.cameras.length)}
-              className="bg-green-900/60 hover:bg-green-700/80 text-white px-2 py-1 rounded text-sm"
-              disabled={cameraFrozen || paused}
-            >
-              ◀
-            </button>
-            <span className="text-green-300 font-mono text-sm">Cámara {currentCamera + 1} / {house.cameras.length}</span>
-            <button
-              onClick={() => setCurrentCamera((c) => (c + 1) % house.cameras.length)}
-              className="bg-green-900/60 hover:bg-green-700/80 text-white px-2 py-1 rounded text-sm"
-              disabled={cameraFrozen || paused}
-            >
-              ▶
-            </button>
+          {/* Bloc de notas a la derecha, sin desplazar la cámara */}
+          <div className="flex flex-col items-center ml-4" style={{minWidth: 420}}>
+            <BlocDeNotas />
           </div>
         </div>
-      </div>
+      )}
       {/* HUD y otros elementos debajo */}
       <div className="w-full flex flex-col items-center mt-6">
         <HUDButtons 
@@ -335,12 +390,6 @@ const GameScreen = ({ selectedHouseId }: { selectedHouseId: string }) => {
         onQuestionSelected={handleOuijaQuestionSelected}
       />
       <PhotoGallery photos={photos} renderEvent={renderEvent} />
-      {/* Sistema de diálogos */}
-      <DialogSystem
-        scene={currentDialogScene}
-        isVisible={showDialog}
-        onComplete={handleDialogComplete}
-      />
     </div>
   );
 };

@@ -22,6 +22,7 @@ export interface DialogScene {
   characters: DialogCharacter[];
   lines: DialogLine[];
   background?: string;
+  overlay?: boolean;
 }
 
 interface DialogSystemProps {
@@ -111,6 +112,7 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
   const [displayedText, setDisplayedText] = useState('');
+  const [fadeOut, setFadeOut] = useState(false);
 
   const currentLine = scene.lines[currentLineIndex];
 
@@ -124,11 +126,9 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
 
   useEffect(() => {
     if (!isVisible || !currentLine) return;
-
     setIsTyping(true);
     let currentText = '';
     let currentIndex = 0;
-
     const typeInterval = setInterval(() => {
       if (currentIndex < currentLine.text.length) {
         currentText += currentLine.text[currentIndex];
@@ -138,82 +138,100 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
         clearInterval(typeInterval);
         setIsTyping(false);
       }
-    }, 30);
-
+    }, 10); // Más rápido
     return () => clearInterval(typeInterval);
   }, [currentLineIndex, isVisible, currentLine]);
 
+  // Click: primero muestra texto completo, luego avanza
   const handleNext = () => {
     if (isTyping) {
-      // Si está escribiendo, mostrar todo el texto
       setDisplayedText(currentLine.text);
       setIsTyping(false);
     } else if (currentLineIndex < scene.lines.length - 1) {
-      // Ir a la siguiente línea
       setCurrentLineIndex(prev => prev + 1);
     } else {
-      // Terminar la escena
-      onComplete();
+      setFadeOut(true);
+      setTimeout(() => {
+        setFadeOut(false);
+        onComplete();
+      }, 700);
     }
   };
 
   if (!isVisible) return null;
 
+  // Overlay: superpuesto al juego, sin fondo
+  // No overlay: escena completa, fondo configurable
+  const isOverlay = !!scene.overlay;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+    <div
+      className={
+        isOverlay
+          ? 'fixed inset-0 z-50 flex items-end justify-center pointer-events-auto'
+          : 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 pointer-events-auto'
+      }
+      style={isOverlay ? {} : { backgroundImage: scene.background ? `url(${scene.background})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      onClick={handleNext}
+    >
+      {/* Fundido a negro sutil */}
+      {fadeOut && (
+        <div className="fixed inset-0 bg-black z-[100] transition-opacity duration-1000 ease-in-out opacity-80 pointer-events-none" style={{transitionProperty: 'opacity'}} />
+      )}
+      {/* Personajes y diálogo en la misma zona visual */}
+      <div className="absolute inset-0 flex items-end justify-between pointer-events-none select-none">
+        {scene.characters.map((character, index) => (
+          <div
+            key={character.name + character.position}
+            className={
+              isOverlay
+                ? `relative z-30 w-[22vw] h-[70vh] md:w-[28vw] md:h-[80vh] lg:w-[32vw] lg:h-[88vh] ${character.position === 'left' ? 'ml-8 md:ml-16' : 'mr-8 md:mr-16'}`
+                : `relative z-30 w-[32vw] h-[88vh] md:w-[36vw] md:h-[92vh] lg:w-[40vw] lg:h-[96vh] ${character.position === 'left' ? 'ml-8 md:ml-16' : 'mr-8 md:mr-16'}`
+            }
+            style={{ bottom: isOverlay ? '120px' : '180px' }}
+          >
+            <img
+              src={character.image}
+              alt={character.name}
+              className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(0,255,0,0.3)]"
+              draggable={false}
+            />
+          </div>
+        ))}
+      </div>
+      {/* Cuadro de diálogo más abajo y delante de los personajes */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="w-full max-w-6xl mx-4"
+        className={
+          (isOverlay
+            ? 'w-full max-w-4xl mx-4'
+            : 'w-full max-w-6xl mx-4') +
+          ' relative z-40 pointer-events-auto'
+        }
+        style={{ marginBottom: isOverlay ? 32 : 40 }}
       >
-        {/* Fondo de la escena */}
-        {scene.background && (
-          <div 
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${scene.background})` }}
-          />
-        )}
-
-        {/* Personajes */}
-        <div className="relative flex justify-between items-end h-[500px]">
-          {scene.characters.map((character, index) => (
-            <motion.div
-              key={character.name}
-              initial={{ opacity: 0, x: character.position === 'left' ? -100 : 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              className={`w-[400px] h-[500px] ${character.position === 'left' ? 'order-first' : 'order-last'}`}
-            >
-              <img
-                src={character.image}
-                alt={character.name}
-                className="w-full h-full object-contain"
-              />
-            </motion.div>
-          ))}
+        {/* Nombre del personaje estilo Persona 5 */}
+        <div className="flex items-center gap-2 mb-2 ml-2">
+          <div className="bg-black px-6 py-2 rounded-tl-lg rounded-tr-lg rounded-bl-2xl border-2 border-white shadow-lg text-white font-bold text-2xl tracking-wide" style={{display:'inline-block', minWidth:160}}>
+            {currentLine.character.name}
+          </div>
         </div>
-
-        {/* Cuadro de diálogo */}
+        {/* Cuadro de diálogo estilo Persona 5 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gray-900/95 border-2 border-green-500/40 rounded-lg p-6 mt-4"
+          className="relative bg-[#181c23] border-2 border-white rounded-2xl p-10 shadow-2xl text-left"
+          style={{ minHeight: 120 }}
         >
-          <div className="flex items-center gap-4 mb-4">
-            <span className="text-green-400 font-mono text-lg">
-              [{currentLine.character.name}]:
-            </span>
-          </div>
-          <p className="text-green-100 text-lg font-mono">
+          <p className="text-green-100 text-2xl font-mono">
             <TextWithEffects text={displayedText} effects={currentLine.effects} />
             {isTyping && <span className="animate-pulse">|</span>}
           </p>
-          <button
-            onClick={handleNext}
-            className="mt-4 px-6 py-2 rounded bg-green-700 hover:bg-green-600 text-white font-mono"
-          >
-            {currentLineIndex < scene.lines.length - 1 ? 'Siguiente' : 'Continuar'}
-          </button>
+          <div className="text-base text-gray-400 mt-6 text-right select-none">
+            Haz click para continuar
+          </div>
         </motion.div>
       </motion.div>
     </div>
