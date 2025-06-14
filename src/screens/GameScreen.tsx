@@ -16,10 +16,9 @@ import html2canvas from 'html2canvas';
 import DialogSystem from '../components/DialogSystem';
 import { introScene } from '../scenes/introScene';
 import { LEVELS } from '../data/levelConfigs';
-import { level2Scene } from '../scenes/level2Scene';
-import { level2IntroScene } from '../scenes/level2IntroScene';
-import { level2InitialScene } from '../scenes/level2InitialScene';
 import BlocDeNotas from '../components/BlocDeNotas';
+import levelOrder from '../data/levelOrder';
+import flechita from '../images/flechita.png';
 
 interface EventState {
   type: 'orb' | 'fog';
@@ -54,12 +53,12 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
   const [showInitial, setShowInitial] = useState(true);
   const [showIntro, setShowIntro] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
-  const [currentDialogScene, setCurrentDialogScene] = useState(level2InitialScene);
   const orbAppearedRef = useRef(false);
   const cameraRef = useRef<HTMLDivElement>(null);
   const [frozenImage, setFrozenImage] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
   const [gameLoaded, setGameLoaded] = useState(false);
+  const [fadingToGameplay, setFadingToGameplay] = useState(false);
 
   // Buscar la configuración del nivel actual
   const levelConfig = LEVELS.find(l => l.id === selectedLevelId) ?? LEVELS[0];
@@ -251,13 +250,11 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
     }
   };
 
-  // Al terminar la escena inicial, mostrar fundido y luego la intro
+  // Al terminar la escena inicial, mostrar fundido y luego el gameplay
   const handleInitialComplete = () => {
     setShowInitial(false);
     setTimeout(() => {
-      setGameLoaded(true); // Solo aquí se carga el juego
-      setShowIntro(true);
-      setCurrentDialogScene(level2IntroScene);
+      setGameLoaded(true); // Aquí comienza el gameplay
     }, 700);
   };
 
@@ -265,7 +262,7 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
   const handleIntroComplete = () => {
     setShowIntro(false);
     setTimeout(() => {
-      setCurrentDialogScene(level2Scene);
+    
       setShowDialog(true);
     }, 5000);
   };
@@ -281,8 +278,33 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
   const handlePause = () => setPaused(true);
   const handleResume = () => setPaused(false);
 
+
+  const order = levelOrder[selectedLevelId] || ['gameplay'];
+  const [stepIndex, setStepIndex] = useState(0);
+  const currentStep = order[stepIndex];
+  const isGameplay = currentStep === 'gameplay';
+
+  const handleStepComplete = () => {
+    if (stepIndex < order.length - 1) {
+      // Si el siguiente paso es gameplay, haz fade out
+      if (order[stepIndex + 1] === 'gameplay') {
+        setFadingToGameplay(true);
+        setTimeout(() => {
+          setFadingToGameplay(false);
+          setStepIndex(stepIndex + 1);
+        }, 900);
+      } else {
+        setStepIndex(stepIndex + 1);
+      }
+    }
+  };
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen p-4 bg-[url('/bg-noise.png')] bg-black bg-blend-overlay bg-repeat">
+      {/* Fade out a negro al pasar a gameplay */}
+      {fadingToGameplay && (
+        <div className="fixed inset-0 bg-black z-[100] transition-opacity duration-700 ease-in-out opacity-90 pointer-events-none" style={{transitionProperty: 'opacity'}} />
+      )}
       {/* Menú de pausa */}
       <div className="fixed top-8 right-8 z-50">
         <button onClick={handlePause} className="bg-gray-800/80 text-white px-4 py-2 rounded shadow font-mono text-sm">⏸ Pausa</button>
@@ -304,33 +326,16 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
         />
       </div>
       <div className="text-green-400 font-mono mb-2">Tiempo: {formatTime(elapsedSeconds)}</div>
-      {/* Escena inicial */}
-      <DialogSystem
-        scene={level2InitialScene}
-        isVisible={showInitial}
-        onComplete={handleInitialComplete}
-      />
-      {/* Escena intro */}
-      <DialogSystem
-        scene={level2IntroScene}
-        isVisible={!showInitial && showIntro}
-        onComplete={handleIntroComplete}
-      />
-      {/* Escena overlay */}
-      <DialogSystem
-        scene={currentDialogScene}
-        isVisible={!showInitial && !showIntro && showDialog}
-        onComplete={handleDialogComplete}
-      />
-      {/* Gameplay solo si no hay diálogo activo y el juego está cargado */}
-      {gameLoaded && !showInitial && !showIntro && !showDialog && (
-        <div className="flex items-start justify-center w-full gap-0">
+
+      {/* Gameplay solo si corresponde */}
+      {isGameplay && (
+        <div className="w-full flex flex-row items-start justify-center gap-0">
           {/* Sensores pegados a la cámara */}
-          <div className="flex flex-col items-end justify-center h-full mr-4 z-40">
+          <div className="flex flex-col items-end justify-center h-full mr-4 z-40" style={{ minWidth: 120 }}>
             <Sensors emfLevel={emfLevel} temperature={temperature} />
           </div>
           {/* Centro: Cámara y controles */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center" style={{ minWidth: 800, maxWidth: 800 }}>
             <div className="relative mb-2" ref={cameraRef} id="camera-capture-area">
               {cameraFrozen && frozenImage ? (
                 <img src={frozenImage} alt="Cámara congelada" className="w-[800px] h-[500px] object-cover rounded-lg border-4 border-green-800" />
@@ -349,26 +354,28 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
               )}
             </div>
             {/* Botones de cambiar cámara */}
-            <div className="flex items-center justify-center gap-2 mt-2">
+            <div className="flex items-center gap-4 mt-2">
               <button
                 onClick={() => setCurrentCamera((c) => (c - 1 + levelConfig.rooms.length) % levelConfig.rooms.length)}
-                className="bg-green-900/60 hover:bg-green-700/80 text-white px-2 py-1 rounded text-sm"
+                className="focus:outline-none"
                 disabled={cameraFrozen || paused}
+                style={{ background: 'none', border: 'none', padding: 0, opacity: cameraFrozen || paused ? 0.5 : 1 }}
               >
-                ◀
+                <img src={flechita} alt="Anterior" style={{ width: 44, height: 44, objectFit: 'contain', transform: 'none' }} />
               </button>
-              <span className="text-green-300 font-mono text-sm">{cameraName}</span>
+              <span className="text-green-300 font-mono text-lg px-2 select-none" style={{ minWidth: 120, textAlign: 'center' }}>{cameraName}</span>
               <button
                 onClick={() => setCurrentCamera((c) => (c + 1) % levelConfig.rooms.length)}
-                className="bg-green-900/60 hover:bg-green-700/80 text-white px-2 py-1 rounded text-sm"
+                className="focus:outline-none"
                 disabled={cameraFrozen || paused}
+                style={{ background: 'none', border: 'none', padding: 0, opacity: cameraFrozen || paused ? 0.5 : 1 }}
               >
-                ▶
+                <img src={flechita} alt="Siguiente" style={{ width: 44, height: 44, objectFit: 'contain', transform: 'scaleX(-1)' }} />
               </button>
             </div>
           </div>
           {/* Bloc de notas a la derecha, sin desplazar la cámara */}
-          <div className="flex flex-col items-center ml-4" style={{minWidth: 420}}>
+          <div className="flex flex-col items-center ml-16" style={{ minWidth: 420 }}>
             <BlocDeNotas />
           </div>
         </div>

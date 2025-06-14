@@ -168,8 +168,8 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
     <div
       className={
         isOverlay
-          ? 'fixed inset-0 z-50 flex items-end justify-center pointer-events-auto'
-          : 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 pointer-events-auto'
+          ? 'fixed inset-0 z-50 flex flex-col justify-end items-center pointer-events-auto'
+          : 'fixed inset-0 z-50 flex flex-col justify-end items-center bg-black/80 pointer-events-auto'
       }
       style={isOverlay ? {} : { backgroundImage: scene.background ? `url(${scene.background})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}
       onClick={handleNext}
@@ -178,28 +178,43 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
       {fadeOut && (
         <div className="fixed inset-0 bg-black z-[100] transition-opacity duration-1000 ease-in-out opacity-80 pointer-events-none" style={{transitionProperty: 'opacity'}} />
       )}
-      {/* Personajes y diálogo en la misma zona visual */}
-      <div className="absolute inset-0 flex items-end justify-between pointer-events-none select-none">
+      {/* Personajes pegados abajo */}
+      <div className="absolute bottom-0 left-0 right-0 flex flex-row items-end justify-between pointer-events-none select-none w-full" style={{height: 'auto'}}>
         {scene.characters.map((character, index) => (
           <div
             key={character.name + character.position}
             className={
               isOverlay
-                ? `relative z-30 w-[22vw] h-[70vh] md:w-[28vw] md:h-[80vh] lg:w-[32vw] lg:h-[88vh] ${character.position === 'left' ? 'ml-8 md:ml-16' : 'mr-8 md:mr-16'}`
-                : `relative z-30 w-[32vw] h-[88vh] md:w-[36vw] md:h-[92vh] lg:w-[40vw] lg:h-[96vh] ${character.position === 'left' ? 'ml-8 md:ml-16' : 'mr-8 md:mr-16'}`
+                ? `relative z-30 flex items-end justify-${character.position === 'left' ? 'start' : 'end'} w-[900px] max-h-[90vh] h-auto ${character.position === 'left' ? 'ml-8 md:ml-16' : 'mr-8 md:mr-16'}`
+                : `relative z-30 flex items-end justify-${character.position === 'left' ? 'start' : 'end'} w-[900px] max-h-[90vh] h-auto ${character.position === 'left' ? 'ml-8 md:ml-16' : 'mr-8 md:mr-16'}`
             }
-            style={{ bottom: isOverlay ? '120px' : '180px' }}
+            style={{ maxWidth: '900px' }}
           >
-            <img
-              src={character.image}
-              alt={character.name}
-              className="w-full h-full object-contain drop-shadow-[0_0_40px_rgba(0,255,0,0.3)]"
-              draggable={false}
-            />
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <img
+                src={character.image}
+                alt={character.name}
+                className="w-full h-auto max-h-[90vh] object-contain drop-shadow-[0_0_40px_rgba(0,255,0,0.3)]"
+                draggable={false}
+                style={{ display: 'block' }}
+              />
+              {/* Fade-out en la parte inferior */}
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: '18%',
+                  pointerEvents: 'none',
+                  background: 'linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%)',
+                }}
+              />
+            </div>
           </div>
         ))}
       </div>
-      {/* Cuadro de diálogo más abajo y delante de los personajes */}
+      {/* Cuadro de diálogo centrado */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -210,7 +225,7 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
             : 'w-full max-w-6xl mx-4') +
           ' relative z-40 pointer-events-auto'
         }
-        style={{ marginBottom: isOverlay ? 32 : 40 }}
+        style={{}}
       >
         {/* Nombre del personaje estilo Persona 5 */}
         <div className="flex items-center gap-2 mb-2 ml-2">

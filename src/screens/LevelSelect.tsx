@@ -1,98 +1,37 @@
-import { useState } from 'react';
+import React from 'react';
 
-interface Level {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: 'Fácil' | 'Normal' | 'Difícil';
-  locked: boolean;
-}
-
-const levels: Level[] = [
-  {
-    id: 'level1',
-    title: 'La Casa Abandonada',
-    description: 'Una antigua casa familiar abandonada. Los vecinos reportan ruidos extraños y luces que se encienden solas. ¿Podrás descubrir qué espíritu la habita?',
-    difficulty: 'Fácil',
-    locked: false
-  },
-  {
-    id: 'level2',
-    title: 'El Hospital Psiquiátrico',
-    description: 'Un antiguo hospital donde los pacientes reportaban ver sombras en las noches. Las historias cuentan que algunos nunca se fueron...',
-    difficulty: 'Normal',
-    locked: false
-  },
-  {
-    id: 'level3',
-    title: 'La Mansión de los Blackwood',
-    description: 'La familia Blackwood desapareció misteriosamente una noche. Nadie sabe qué sucedió, pero los que se atreven a entrar aseguran escuchar susurros...',
-    difficulty: 'Difícil',
-    locked: false
-  }
+const levels = [
+  { id: 'level1', name: 'Nivel 1', available: true },
+  { id: 'level2', name: ' ', available: false },
+  { id: 'level3', name: ' ', available: false },
+  { id: 'level4', name: ' ', available: false },
+  { id: 'level5', name: ' ', available: false },
 ];
 
-interface LevelSelectProps {
-  onSelect: (levelId: string) => void;
-  onBack: () => void;
-}
-
-const LevelSelect = ({ onSelect, onBack }: LevelSelectProps) => {
-  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
-
-  return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center">Selecciona tu Misión</h1>
-        
-        <div className="grid gap-6">
-          {levels.map((level) => (
-            <div
-              key={level.id}
-              className={`p-6 rounded-lg border-2 cursor-pointer transition-all ${
-                selectedLevel === level.id
-                  ? 'border-green-500 bg-green-900/20'
-                  : 'border-gray-700 hover:border-green-500'
-              }`}
-              onClick={() => setSelectedLevel(level.id)}
-            >
-              <div className="flex justify-between items-start mb-2">
-                <h2 className="text-2xl font-bold">{level.title}</h2>
-                <span className={`px-3 py-1 rounded text-sm ${
-                  level.difficulty === 'Fácil' ? 'bg-green-600' :
-                  level.difficulty === 'Normal' ? 'bg-yellow-600' :
-                  'bg-red-600'
-                }`}>
-                  {level.difficulty}
-                </span>
-              </div>
-              <p className="text-gray-300 mb-4">{level.description}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex justify-between mt-8">
-          <button
-            className="px-6 py-3 rounded bg-gray-700 hover:bg-gray-600"
-            onClick={onBack}
-          >
-            Volver
-          </button>
-          <button
-            className={`px-6 py-3 rounded ${
-              selectedLevel
-                ? 'bg-green-600 hover:bg-green-700'
-                : 'bg-gray-700 cursor-not-allowed'
-            }`}
-            onClick={() => selectedLevel && onSelect(selectedLevel)}
-            disabled={!selectedLevel}
-          >
-            Comenzar Investigación
-          </button>
-        </div>
-      </div>
+const LevelSelect = ({ onSelect, onBack }: { onSelect: (id: string) => void; onBack: () => void }) => (
+  <div className="flex flex-col items-center justify-center min-h-screen w-full">
+    <h2 className="text-4xl font-bold mb-10 text-green-200 drop-shadow-lg">Selecciona un nivel</h2>
+    <div className="flex flex-col gap-6 w-full max-w-md">
+      {levels.map((level, idx) => (
+        <button
+          key={level.id}
+          onClick={() => level.available && onSelect(level.id)}
+          disabled={!level.available}
+          className={`w-full py-6 rounded-xl text-2xl font-mono shadow-lg border-2 transition-all
+            ${level.available ? 'bg-green-800 hover:bg-green-700 text-white border-green-400 cursor-pointer' : 'bg-gray-800 text-gray-400 border-gray-600 cursor-not-allowed'}`}
+        >
+          {level.name}
+          {!level.available && <span className="ml-4 text-yellow-300 text-lg">Próximamente</span>}
+        </button>
+      ))}
     </div>
-  );
-};
+    <button
+      onClick={onBack}
+      className="mt-12 px-8 py-3 rounded bg-gray-700 hover:bg-gray-600 text-white font-mono text-lg shadow"
+    >
+      Volver
+    </button>
+  </div>
+);
 
 export default LevelSelect; 

@@ -1,5 +1,7 @@
 import { DialogScene } from '../components/DialogSystem';
 import { level2Scene } from '../scenes/level2Scene';
+import houseGif from '../images/houseGif.png';
+import gamelogo from '../images/gamelogo.png';
 
 // Tipos de eventos posibles (puedes añadir más en el futuro)
 export type LevelEventType = 'orb' | 'glitch' | 'fog' | string;
@@ -75,4 +77,28 @@ export const level2Config: LevelConfig = {
   introSceneId: 'level2_scene'
 };
 
-export const LEVELS: LevelConfig[] = [level2Config]; 
+export const LEVELS: LevelConfig[] = [
+  {
+    id: 'level1',
+    name: 'Casa Abandonada',
+    durationSeconds: 300,
+    rooms: [
+      {
+        name: 'Sala',
+        image: houseGif,
+        avgTemperature: 12,
+      },
+    ],
+    events: [
+      {
+        type: 'orb',
+        probabilityPerSecond: 2,
+        rooms: [
+          { roomIndex: 0, probabilityPerSecond: 2 },
+        ],
+      },
+    ],
+    ghostImage: gamelogo,
+  },
+  level2Config
+]; 
