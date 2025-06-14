@@ -1,5 +1,5 @@
 import React, { useState, useEffect, JSX } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion} from 'framer-motion';
 
 // Tipos para el sistema de diálogos
 export interface DialogCharacter {
@@ -180,7 +180,7 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
       )}
       {/* Personajes pegados abajo */}
       <div className="absolute bottom-0 left-0 right-0 flex flex-row items-end justify-between pointer-events-none select-none w-full" style={{height: 'auto'}}>
-        {scene.characters.map((character, index) => (
+        {scene.characters.map((character) => (
           <div
             key={character.name + character.position}
             className={

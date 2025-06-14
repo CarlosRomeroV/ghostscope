@@ -1,7 +1,6 @@
 import React, { useState, ReactElement } from 'react';
 import { motion } from 'framer-motion';
 import PhotoViewer from './PhotoViewer';
-import CameraView from './CameraView';
 
 interface EventState {
   type: 'orb' | 'fog';

@@ -1,4 +1,3 @@
-import React from 'react';
 
 const levels = [
   { id: 'level1', name: 'Nivel 1', available: true },
@@ -12,7 +11,7 @@ const LevelSelect = ({ onSelect, onBack }: { onSelect: (id: string) => void; onB
   <div className="flex flex-col items-center justify-center min-h-screen w-full">
     <h2 className="text-4xl font-bold mb-10 text-green-200 drop-shadow-lg">Selecciona un nivel</h2>
     <div className="flex flex-col gap-6 w-full max-w-md">
-      {levels.map((level, idx) => (
+      {levels.map((level) => (
         <button
           key={level.id}
           onClick={() => level.available && onSelect(level.id)}

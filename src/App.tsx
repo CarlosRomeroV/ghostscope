@@ -6,7 +6,6 @@ import LevelSelect from "./screens/LevelSelect";
 import IntroScene from "./screens/IntroScene";
 import { UserProvider } from './managers/UserContext';
 import Navbar from './components/Navbar';
-import './fonts/Sketcha Kits.otf';
 
 const App = () => {
   const [screen, setScreen] = useState<"menu" | "levels" | "intro" | "select" | "game">("menu");
@@ -14,6 +13,7 @@ const App = () => {
   const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
 
+  console.log(selectedHouseId);
   const handleIntroComplete = () => {
     setTransitioning(true);
     setTimeout(() => {

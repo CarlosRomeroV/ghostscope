@@ -28,7 +28,7 @@ const Navbar: React.FC = () => {
     setLoading(true);
     try {
       // Verifica si el usuario ya existe
-      const { data: existing, error: findError } = await supabase
+      const { data: existing } = await supabase
         .from('users')
         .select('id')
         .eq('username', registerData.username)
@@ -62,7 +62,7 @@ const Navbar: React.FC = () => {
     setLoginError('');
     setLoading(true);
     try {
-      const { data: userRow, error } = await supabase
+      const { data: userRow } = await supabase
         .from('users')
         .select('*')
         .eq('username', loginData.username)

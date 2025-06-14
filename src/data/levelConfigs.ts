@@ -1,5 +1,3 @@
-import { DialogScene } from '../components/DialogSystem';
-import { level2Scene } from '../scenes/level2Scene';
 import houseGif from '../images/houseGif.png';
 import gamelogo from '../images/gamelogo.png';
 

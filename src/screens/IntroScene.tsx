@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import DialogSystem, { DialogScene } from '../components/DialogSystem';
 import testImage from '../images/test.jpg';
 import snakeImage from '../images/snake.png';

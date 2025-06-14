@@ -4,7 +4,6 @@ import CameraView from "../components/CameraView";
 import DevMenu from "../components/DevMenu";
 import HUDButtons from "../components/HUDButtons";
 import CorduraBar from "../components/CorduraBar";
-import { HOUSES } from "../data/houses";
 import OrbEvent from "../events/OrbEvent";
 import FogEvent from "../events/FogEvent";
 import FlashlightOverlay from "../components/FlashlightOverlay";
@@ -13,8 +12,6 @@ import PhotoGallery from "../components/PhotoGallery";
 import CameraFlash from "../components/CameraFlash";
 import Sensors from "../components/Sensors";
 import html2canvas from 'html2canvas';
-import DialogSystem from '../components/DialogSystem';
-import { introScene } from '../scenes/introScene';
 import { LEVELS } from '../data/levelConfigs';
 import BlocDeNotas from '../components/BlocDeNotas';
 import levelOrder from '../data/levelOrder';
@@ -50,15 +47,15 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
   const [emfLevel, setEmfLevel] = useState(0);
   const [temperature, setTemperature] = useState(20);
   const [cameraFrozen, setCameraFrozen] = useState(false);
-  const [showInitial, setShowInitial] = useState(true);
-  const [showIntro, setShowIntro] = useState(false);
-  const [showDialog, setShowDialog] = useState(false);
+  const [] = useState(true);
+  const [] = useState(false);
+  const [, setShowDialog] = useState(false);
   const orbAppearedRef = useRef(false);
   const cameraRef = useRef<HTMLDivElement>(null);
   const [frozenImage, setFrozenImage] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
-  const [gameLoaded, setGameLoaded] = useState(false);
-  const [fadingToGameplay, setFadingToGameplay] = useState(false);
+  const [gameLoaded] = useState(false);
+  const [fadingToGameplay] = useState(false);
 
   // Buscar la configuración del nivel actual
   const levelConfig = LEVELS.find(l => l.id === selectedLevelId) ?? LEVELS[0];
@@ -251,28 +248,9 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
   };
 
   // Al terminar la escena inicial, mostrar fundido y luego el gameplay
-  const handleInitialComplete = () => {
-    setShowInitial(false);
-    setTimeout(() => {
-      setGameLoaded(true); // Aquí comienza el gameplay
-    }, 700);
-  };
 
   // Al terminar la intro, empieza el juego y a los 5s muestra overlay
-  const handleIntroComplete = () => {
-    setShowIntro(false);
-    setTimeout(() => {
-    
-      setShowDialog(true);
-    }, 5000);
-  };
 
-  const handleDialogComplete = () => {
-    setShowDialog(false);
-    setCameraFrozen(false);
-    setFrozenImage(null);
-    setPaused(false);
-  };
 
   // Menú de pausa
   const handlePause = () => setPaused(true);
@@ -280,24 +258,10 @@ const GameScreen = ({ selectedLevelId }: { selectedLevelId: string }) => {
 
 
   const order = levelOrder[selectedLevelId] || ['gameplay'];
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex] = useState(0);
   const currentStep = order[stepIndex];
   const isGameplay = currentStep === 'gameplay';
 
-  const handleStepComplete = () => {
-    if (stepIndex < order.length - 1) {
-      // Si el siguiente paso es gameplay, haz fade out
-      if (order[stepIndex + 1] === 'gameplay') {
-        setFadingToGameplay(true);
-        setTimeout(() => {
-          setFadingToGameplay(false);
-          setStepIndex(stepIndex + 1);
-        }, 900);
-      } else {
-        setStepIndex(stepIndex + 1);
-      }
-    }
-  };
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen p-4 bg-[url('/bg-noise.png')] bg-black bg-blend-overlay bg-repeat">

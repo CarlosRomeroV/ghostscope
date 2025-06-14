@@ -1,6 +1,5 @@
 import React, { ReactElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CameraView from './CameraView';
 
 interface EventState {
   type: 'orb' | 'fog';
@@ -22,7 +21,7 @@ interface PhotoViewerProps {
   renderEvent: (event: EventState) => ReactElement;
 }
 
-const PhotoViewer: React.FC<PhotoViewerProps> = ({ photo, onClose, isVisible, renderEvent }) => {
+const PhotoViewer: React.FC<PhotoViewerProps> = ({ photo, onClose, isVisible }) => {
   if (!photo) return null;
 
   return (

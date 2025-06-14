@@ -1,4 +1,3 @@
-import React from 'react';
 import gameLogo from '../images/gamelogo.png';
 import houseGif from '../images/houseGif.png';
 
