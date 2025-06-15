@@ -2,6 +2,7 @@ import DialogSystem, { DialogScene } from '../components/DialogSystem';
 import testImage from '../images/test.jpg';
 import snakeImage from '../images/snake.png';
 import voidImage from '../images/void.png';
+import murielImage from '../images/muriel.png';
 
 interface IntroSceneProps {
   onComplete: () => void;
@@ -18,8 +19,8 @@ const introDialogScene: DialogScene = {
       position: 'left',
     },
     {
-      name: '',
-      image: voidImage,
+      name: 'Muriel',
+      image: murielImage,
       position: 'left',
     },
   ],

@@ -1,30 +1,39 @@
-export type GhostEventBehavior = {
-    name: string;
-    enabled: boolean;
-    params?: Record<string, any>;
-  };
-  
-  export type GhostDefinition = {
-    id: string;
-    name: string;
-    events: Record<string, GhostEventBehavior>;
-  };
-  
-  export const GHOSTS: GhostDefinition[] = [
-    {
-      id: "phantom",
-      name: "Phantom",
-      events: {
-        orb: { name: "Orbes", enabled: true, params: { speed: 1, wobble: 0.6 } },
-        glitch: { name: "Glitch Rojo", enabled: true, params: { intensity: "medium" } },
-      },
+export interface GhostOuijaResponses {
+  age?: string[];
+  friendly?: string[];
+  help?: string[];
+  where?: string[];
+  harm?: string[];
+}
+
+export interface GhostEventConfig {
+  apparitionDuration?: number; // segundos
+  // Puedes añadir más eventos personalizados aquí
+}
+
+export interface GhostDefinition {
+  id: string;
+  name: string;
+  description: string;
+  events: GhostEventConfig;
+  ouijaResponses?: GhostOuijaResponses;
+}
+
+export const GHOSTS: GhostDefinition[] = [
+  {
+    id: 'phantom',
+    name: 'Phantom',
+    description: 'Un espectro que se manifiesta con apariciones largas y baja la temperatura rápidamente.',
+    events: {
+      apparitionDuration: 8, // Aparición más larga de lo normal
     },
-    {
-      id: "poltergeist",
-      name: "Poltergeist",
-      events: {
-        orb: { name: "Orbes", enabled: false },
-        glitch: { name: "Glitch Rojo", enabled: true, params: { intensity: "high" } },
-      },
+    ouijaResponses: {
+      age: ['Muchos...', 'Demasiados...'],
+      friendly: ['No', '...', 'No lo sé'],
+      help: ['No puedo ser ayudado', '...'],
+      where: ['Aquí...', 'En las sombras'],
+      harm: ['Quizá', '...', '¿Por qué lo preguntas?'],
     },
-  ];
+  },
+  // Puedes añadir más fantasmas aquí
+];

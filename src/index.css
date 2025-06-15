@@ -53,7 +53,7 @@
   .font-crimson {
     font-family: 'Crimson Text', serif;
   }
-
+  
   body, button, input, textarea, select, .sketcha-font {
     font-family: 'SketchaKits', 'MedievalSharp', 'Crimson Text', serif;
     font-size: 1rem;

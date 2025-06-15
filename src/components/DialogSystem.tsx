@@ -4,7 +4,7 @@ import { motion} from 'framer-motion';
 // Tipos para el sistema de diálogos
 export interface DialogCharacter {
   name: string;
-  image: string;
+    image: string;
   position: 'left' | 'right';
 }
 
@@ -221,19 +221,19 @@ const DialogSystem: React.FC<DialogSystemProps> = ({ scene, isVisible, onComplet
         exit={{ opacity: 0, y: 50 }}
         className={
           (isOverlay
-            ? 'w-full max-w-4xl mx-4'
+            ? 'w-full max-w-6xl mx-4'
             : 'w-full max-w-6xl mx-4') +
           ' relative z-40 pointer-events-auto'
         }
         style={{}}
       >
-        {/* Nombre del personaje estilo Persona 5 */}
+        {/* Nombre del personaje */}
         <div className="flex items-center gap-2 mb-2 ml-2">
           <div className="bg-black px-6 py-2 rounded-tl-lg rounded-tr-lg rounded-bl-2xl border-2 border-white shadow-lg text-white font-bold text-2xl tracking-wide" style={{display:'inline-block', minWidth:160}}>
             {currentLine.character.name}
           </div>
         </div>
-        {/* Cuadro de diálogo estilo Persona 5 */}
+        {/* Cuadro de diálogo*/}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

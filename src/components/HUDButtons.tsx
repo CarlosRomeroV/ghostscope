@@ -7,6 +7,7 @@ type HUDButtonsProps = {
   onTakePhoto: () => void;
   remainingPhotos: number;
   batteryLevel: number;
+  onShowGhostInfo: () => void;
 };
 
 const HUDButtons: React.FC<HUDButtonsProps> = ({ 
@@ -14,7 +15,8 @@ const HUDButtons: React.FC<HUDButtonsProps> = ({
   onToggleOuija, 
   onTakePhoto,
   remainingPhotos,
-  batteryLevel
+  batteryLevel,
+  onShowGhostInfo
 }) => {
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
@@ -72,16 +74,17 @@ const HUDButtons: React.FC<HUDButtonsProps> = ({
       </ToolTip>
 
       <ToolTip
-        title="Próximamente"
-        description="Esta herramienta estará disponible en futuras actualizaciones."
-        isVisible={hoveredButton === 'action4'}
+        title="Información"
+        description="Consulta las características de los fantasmas."
+        isVisible={hoveredButton === 'info'}
       >
         <button
-          onMouseEnter={() => setHoveredButton('action4')}
+          onClick={onShowGhostInfo}
+          onMouseEnter={() => setHoveredButton('info')}
           onMouseLeave={() => setHoveredButton(null)}
           className="bg-green-800 hover:bg-green-700 text-white px-4 py-2 rounded"
         >
-          Acción 4
+          📖 Información
         </button>
       </ToolTip>
     </div>

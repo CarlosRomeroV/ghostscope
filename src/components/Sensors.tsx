@@ -35,24 +35,10 @@ const Sensors: React.FC<SensorsProps> = ({ emfLevel, temperature }) => {
       {/* Termómetro */}
       <div className="flex flex-col items-center mt-8">
         <div className="text-green-400 text-xs mb-2 text-center font-mono w-16">Temperatura</div>
-        <div className="w-8 h-48 bg-black/50 rounded-full border-2 border-red-800 relative">
-          {/* Marcas de temperatura */}
-          {[0, 10, 20, 30, 40].map((temp) => (
-            <div
-              key={temp}
-              className="absolute w-full h-0.5 bg-red-800"
-              style={{ top: `${(40 - temp) * 2.5}%` }}
-            />
-          ))}
-          {/* Indicador actual */}
-          <div
-            className="absolute w-full bg-red-500 transition-all duration-300"
-            style={{
-              bottom: 0,
-              height: `${(temperature / 40) * 100}%`,
-              borderRadius: '0 0 4px 4px'
-            }}
-          />
+        <div className="w-24 h-16 bg-black/50 rounded-lg border-2 border-red-800 relative flex items-center justify-center">
+          <span className="text-red-500 text-2xl font-mono">
+            {Math.round(temperature)}°C
+          </span>
         </div>
       </div>
     </div>

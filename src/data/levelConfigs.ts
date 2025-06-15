@@ -1,22 +1,59 @@
 import houseGif from '../images/houseGif.png';
 import gamelogo from '../images/gamelogo.png';
+import sceneDemo from '../images/sceneDemo.png';
+import Aihouse_entrada from '../images/Aihouse_entrada.png';
+import Aihouse_cocina from '../images/Aihouse_cocina.png';
+import ghostPH1 from '../images/ghostPH1.png';
 
 // Tipos de eventos posibles (puedes añadir más en el futuro)
 export type LevelEventType = 'orb' | 'glitch' | 'fog' | string;
 
 export interface LevelEventConfig {
-  type: LevelEventType;
-  probabilityPerSecond: number; // 0-100 (porcentaje, puede ser decimal)
-  rooms: {
-    roomIndex: number; // índice de la habitación/cámara
-    probabilityPerSecond: number; // probabilidad específica para esta habitación
+  type: 'orb' | 'temperatureDrop' | 'glitch' | 'apparition' | 'attack';
+  probabilityPerSecond: number;
+  rooms?: {
+    roomIndex: number;
+    probabilityPerSecond: number;
   }[];
+  temperatureDrop?: number;
+  durationDown?: number;
+  minTemperature?: number;
+  // Para aparición y ataque
+  image?: string;
+  x?: number;
+  y?: number;
+  duration?: number;
+  corduraLoss?: number;
+  coolDown?: number;
+  // Para ataque
+  crackImage?: string;
 }
 
 export interface RoomConfig {
   name: string;
   image: string;
   avgTemperature: number; // temperatura promedio
+}
+
+export interface EventConfig {
+  type: 'orb' | 'temperatureDrop' | 'apparition' | 'attack';
+  probabilityPerSecond: number;
+  rooms?: {
+    roomIndex: number;
+    probabilityPerSecond: number;
+  }[];
+  temperatureDrop?: number; // grados a bajar
+  durationDown?: number; // segundos que tarda en bajar
+  minTemperature?: number; // temperatura mínima (opcional)
+  // Para aparición y ataque
+  image?: string;
+  x?: number;
+  y?: number;
+  duration?: number;
+  corduraLoss?: number;
+  coolDown?: number;
+  // Para ataque
+  crackImage?: string;
 }
 
 export interface LevelConfig {
@@ -78,13 +115,18 @@ export const level2Config: LevelConfig = {
 export const LEVELS: LevelConfig[] = [
   {
     id: 'level1',
-    name: 'Casa Abandonada',
+    name: 'Casa abandonada',
     durationSeconds: 300,
     rooms: [
       {
-        name: 'Sala',
-        image: houseGif,
-        avgTemperature: 12,
+        name: 'Entrada',
+        image: Aihouse_entrada,
+        avgTemperature: 20,
+      },
+      {
+        name: 'Cocina',
+        image: Aihouse_cocina,
+        avgTemperature: 20,
       },
     ],
     events: [
@@ -95,6 +137,30 @@ export const LEVELS: LevelConfig[] = [
           { roomIndex: 0, probabilityPerSecond: 2 },
         ],
       },
+      {
+        type: 'temperatureDrop',
+        probabilityPerSecond: 1,
+        temperatureDrop: 10,
+        durationDown: 5,
+        minTemperature: 5,
+        rooms: [
+          { roomIndex: 0, probabilityPerSecond: 0 },
+          { roomIndex: 1, probabilityPerSecond: 1 },
+        ],
+      },
+      /*{
+        type: 'attack',
+        probabilityPerSecond: 0,
+        image: ghostPH1,
+        x: 60,
+        y: 60,
+        duration: 4,
+        corduraLoss: 25,
+        coolDown: 20,
+        rooms: [
+          { roomIndex: 1, probabilityPerSecond: 50 },
+        ],
+      },*/
     ],
     ghostImage: gamelogo,
   },

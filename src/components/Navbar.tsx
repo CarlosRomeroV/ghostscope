@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 
 const AVATAR_OPTIONS = [
   'https://i.postimg.cc/59CNJQzx/pfp1.png',
-  'https://i.postimg.cc/59CNJQzx/pfp1.png',
+  'https://i.postimg.cc/ZR2tfV73/pfp2.png',
   'https://i.postimg.cc/59CNJQzx/pfp1.png',
 ];
 
